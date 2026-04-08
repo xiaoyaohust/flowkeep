@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model WorkItem {
+  id                  String    @id @default(uuid())
+  title               String
+  description         String?
+  status              String    @default("todo")
+  priority            String    @default("medium")
+  owner               String?
+  dueDate             DateTime?
+  followUpDate        DateTime?
+  nextStep            String?
+  blocker             String?
+  category            String?
+  tags                String    @default("[]")
+  sourceType          String    @default("manual")
+  recurringTemplateId String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  completedAt         DateTime?
+  archivedAt          DateTime?
+
+  recurringTemplate RecurringTemplate?     @relation(fields: [recurringTemplateId], references: [id])
+  relatedLinks      RelatedLink[]
+  meetingNoteLinks  MeetingNoteActionLink[]
+  history           WorkItemHistory[]
+}
+
+model MeetingNote {
+  id          String   @id @default(uuid())
+  title       String
+  meetingDate DateTime
+  attendees   String?
+  notes       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  actionLinks MeetingNoteActionLink[]
+}
+
+model MeetingNoteActionLink {
+  id            String   @id @default(uuid())
+  meetingNoteId String
+  workItemId    String
+  createdAt     DateTime @default(now())
+
+  meetingNote MeetingNote @relation(fields: [meetingNoteId], references: [id], onDelete: Cascade)
+  workItem    WorkItem    @relation(fields: [workItemId], references: [id], onDelete: Cascade)
+
+  @@unique([meetingNoteId, workItemId])
+}
+
+model RelatedLink {
+  id         String   @id @default(uuid())
+  workItemId String
+  url        String
+  title      String?
+  createdAt  DateTime @default(now())
+
+  workItem WorkItem @relation(fields: [workItemId], references: [id], onDelete: Cascade)
+}
+
+model RecurringTemplate {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  frequency   String
+  category    String?
+  tags        String    @default("[]")
+  isActive    Boolean   @default(true)
+  nextDueDate DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  instances WorkItem[]
+}
+
+model WorkItemHistory {
+  id         String   @id @default(uuid())
+  workItemId String
+  field      String
+  oldValue   String?
+  newValue   String?
+  changedAt  DateTime @default(now())
+
+  workItem WorkItem @relation(fields: [workItemId], references: [id], onDelete: Cascade)
+}

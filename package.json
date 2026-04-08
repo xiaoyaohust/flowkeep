@@ -1,0 +1,17 @@
+{
+  "name": "personal-work-os",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter api dev\" \"pnpm --filter web dev\"",
+    "build": "pnpm --filter shared build && pnpm --filter api build && pnpm --filter web build",
+    "db:migrate": "DATABASE_URL=\"file:$(pwd)/data/work-os.db\" npx prisma migrate dev --schema=./prisma/schema.prisma",
+    "db:deploy": "DATABASE_URL=\"file:$(pwd)/data/work-os.db\" npx prisma migrate deploy --schema=./prisma/schema.prisma",
+    "db:generate": "npx prisma generate --schema=./prisma/schema.prisma",
+    "db:seed": "DATABASE_URL=\"file:$(pwd)/data/work-os.db\" ./apps/api/node_modules/.bin/tsx ./prisma/seed.ts",
+    "db:studio": "DATABASE_URL=\"file:$(pwd)/data/work-os.db\" npx prisma studio --schema=./prisma/schema.prisma"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
